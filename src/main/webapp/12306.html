@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>12306</title>
+    <style>
+        table, thead, tr, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        .search {
+            width: 100px;
+            height: 35px;
+            background-color: gold;
+        }
+    </style>
+    <script>
+        // 让查询按钮响应我们的鼠标点击操作
+        window.onload = function () {
+            //找到查询按钮
+            document.getElementsByClassName("search")[0].onclick = function () {
+                // 开始操作DOM
+                request=new XMLHttpRequest();
+                request.onreadystatechange = callBack;
+                startStation=document.getElementById("startStation").value;
+                endStation=document.getElementById("endStation").value;
+                departureDate=document.getElementById("departureDate").value;
+                request.open("GET","/searchTicket?startStation="+startStation+"&endStation="+endStation+"&departureDate="+departureDate);
+                request.send(null);
+
+            }
+        }
+
+        function callBack() {
+            console.log("我是回调函数")
+            //回调：服务器响应成功后，利用回调函数拿到服务器返回的数据
+            if (request.readyState==4){
+                //请求完成
+                //200:成功 400:not fount
+                if (request.status==200){
+                    //通过request.responseText来接受服务器返回的数据
+                    console.log("服务器返回的车次信息"+request.responseText);//String
+                    var trainDate = JSON.parse(request.responseText);//把JSON文本转化成JavaScript对象（数组）
+                    /*
+                    循环把每个车次信息放到表格中
+                     */
+                    for (var i=0;i<trainDate.length;i++){
+                        var train=trainDate[i];
+                        /*
+                        每循环一次创建1个tr，4个td以及6个文本结点，最后还有2个br元素
+                         */
+                        brNode=document.createElement("br")
+                        trainNumberTd=document.createElement("td");
+                        trainNumberTd.appendChild(document.createTextNode(train.trainNumber));
+
+                        startStationTd=document.createElement("td")
+                        startStationTd.appendChild(document.createTextNode(train.startStation))
+                        startStationTd.appendChild(brNode)
+                        startStationTd.appendChild(document.createTextNode(train.endStation));
+
+                        departureDateTd=document.createElement("td");
+                        departureDateTd.appendChild(document.createTextNode(train.departureTime));
+                        departureDateTd.appendChild(brNode);
+                        departureDateTd.appendChild(document.createTextNode(train.arrivalTime));
+
+                        duartionTd=document.createElement("td");
+                        duartionTd.appendChild(document.createTextNode(train.duration))
+
+
+                       var trainTr=document.createElement("tr");
+                       trainTr.appendChild(trainNumberTd);
+                       trainTr.appendChild(startStationTd);
+                       trainTr.appendChild(departureDateTd);
+                       trainTr.appendChild(duartionTd);
+                       document.getElementById("train").appendChild(trainTr)
+                    }
+                }
+                else {
+                    console.log("服务器出错了，状态码：",request.status);
+                }
+            }
+        }
+
+        function search() {
+            console.log("开始车票查询")
+        }
+    </script>
+</head>
+<body>
+
+    <label for="startStation">起始站：</label> <input id="startStation" type="text" name="startStation">
+    <label for="endStation">终点站：</label> <input id="endStation" type="text" name="endStation">
+    <label for="departureDate">出发日期：</label> <input id="departureDate" type="date" name="departureDate">
+    <button class="search">查询</button>
+
+
+
+
+<!-- 先演示假数据，再进行真数据的操作 -->
+<table id="train">
+    <thead>
+    <tr>
+        <th>车次</th>
+        <th>出发站<br>到达站</th>
+        <th>出发时间<br>到达时间</th>
+        <th>历时</th>
+
+    </tr>
+    </thead>
+</table>
+<!-- <button onclick="search()">查询</button> -->
+
+</body>
+</html>
